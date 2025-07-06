@@ -1,7 +1,6 @@
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile, WebAppInfo
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
-import os
 
 # راه اندازی لاگ
 logging.basicConfig(level=logging.INFO)
@@ -131,12 +130,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # هندلر دریافت فایل‌ها
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    file = update.message.document
     await update.message.reply_text("فایل دریافت شد ✅\nسفارش شما بررسی خواهد شد.")
 
 # راه‌اندازی بات
-async def main():
-    TOKEN = os.getenv("BOT_TOKEN") or "7296058262:AAH8kz4p579M0vZC6yBeTxWCi6FiHWfjC0w"
+def main():
+    TOKEN = "7296058262:AAH8kz4p579M0vZC6yBeTxWCi6FiHWfjC0w"
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -144,8 +142,7 @@ async def main():
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
 
     logger.info("Bot is running...")
-    await app.run_polling()
+    app.run_polling()
 
 if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())
+    main()
