@@ -23,7 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("👋 خوش آمدید به چاپ پارسیا! لطفاً یکی از گزینه‌ها را انتخاب کنید:", reply_markup=reply_markup)
 
-# مدیریت کلیک روی دکمه‌ها
+# مدیریت دکمه‌ها
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -46,11 +46,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         await query.edit_message_text("لطفاً تعداد را انتخاب کنید:", reply_markup=InlineKeyboardMarkup(keyboard))
 
-    elif data == "bw_many" or data == "bw_few":
+    elif data in ["bw_many", "bw_few", "color_many", "color_few"]:
         keyboard = [
             [InlineKeyboardButton("🔘 یکرو", callback_data="send_file")],
             [InlineKeyboardButton("🔄 پشت و رو", callback_data="send_file")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="bw")]
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="bw" if "bw" in data else "color")]
         ]
         await query.edit_message_text("تک رو یا پشت و رو؟", reply_markup=InlineKeyboardMarkup(keyboard))
 
@@ -61,14 +61,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔙 بازگشت", callback_data="print_booklet")]
         ]
         await query.edit_message_text("لطفاً تعداد را انتخاب کنید:", reply_markup=InlineKeyboardMarkup(keyboard))
-
-    elif data == "color_many" or data == "color_few":
-        keyboard = [
-            [InlineKeyboardButton("🔘 یکرو", callback_data="send_file")],
-            [InlineKeyboardButton("🔄 پشت و رو", callback_data="send_file")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="color")]
-        ]
-        await query.edit_message_text("تک رو یا پشت و رو؟", reply_markup=InlineKeyboardMarkup(keyboard))
 
     elif data == "send_file":
         await query.edit_message_text("لطفاً فایل خود را ارسال کنید 📎")
@@ -128,11 +120,29 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "support":
         await query.edit_message_text("❗️در صورتی که ربات پاسخگوی نیاز شما نبود و موضوع فوری است با شماره 09177037793 تماس بگیرید یا در تلگرام پیام دهید. لطفاً در غیر این صورت از تماس خودداری فرمایید.")
 
-# هندلر دریافت فایل‌ها
+# دریافت فایل و ارسال به گروه
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    document = update.message.document
+    user = update.message.from_user
+
+    caption = (
+        f"📥 فایل جدید دریافت شد:\n"
+        f"👤 نام: {user.full_name}\n"
+        f"🆔 یوزرنیم: @{user.username if user.username else 'ندارد'}\n"
+        f"📎 نام فایل: {document.file_name}"
+    )
+
+    # ارسال فایل به گروه
+    await context.bot.send_document(
+        chat_id=610732951,
+        document=document.file_id,
+        caption=caption
+    )
+
+    # پاسخ به کاربر
     await update.message.reply_text("فایل دریافت شد ✅\nسفارش شما بررسی خواهد شد.")
 
-# راه‌اندازی بات
+# شروع برنامه
 def main():
     TOKEN = "7296058262:AAH8kz4p579M0vZC6yBeTxWCi6FiHWfjC0w"
     app = Application.builder().token(TOKEN).build()
